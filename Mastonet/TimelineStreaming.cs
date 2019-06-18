@@ -11,6 +11,7 @@ namespace Mastonet
         protected readonly StreamingType streamingType;
         protected readonly string param;
         protected readonly string accessToken;
+        protected CancellationTokenSource cts;
 
         public event EventHandler<StreamUpdateEventArgs> OnUpdate;
         public event EventHandler<StreamNotificationEventArgs> OnNotification;
@@ -26,6 +27,21 @@ namespace Mastonet
         }
 
         public abstract Task Start(CancellationToken token);
+        public Task Start()
+        {
+            cts = new CancellationTokenSource();
+            return Start(cts.Token);
+        }
+
+        public void Stop()
+        {
+            if (cts != null)
+            {
+                cts.Cancel();
+                cts.Dispose();
+                cts = null;
+            }
+        }
 
         protected void SendEvent(string eventName, string data)
         {
